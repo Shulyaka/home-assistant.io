@@ -136,6 +136,15 @@ Some MCP clients may not support OAuth, but may support access tokens. You may c
 
 For more information about authentication in Home Assistant, refer to the [Authentication documentation](/docs/authentication/).
 
+### Device ID
+
+If the device running MCP client has a corresponding device entry in Home Assistant, you can pass its `device_id` to the MCP server. It would allow automatic area selection for the tools that support it.
+
+You can do that in two ways:
+
+1. `Home-Assistant-Device-Id` HTTP header
+2. `"params"."_meta"."io.home-assistant/device_id"` key inside the MCP request. If your MCP client supports it, it is the preferred way.
+
 ### Example: Claude for Desktop
 
 Claude for Desktop can connect to Home Assistant using either a cloud-based remote connector or a local MCP proxy server.
@@ -176,6 +185,7 @@ If your Home Assistant instance is only accessible on your local network (for ex
          "args": [
            "--transport=streamablehttp",
            "--stateless",
+           "--headers", "Home-Assistant-Device-Id", "<device_id>",
            "http://<your_local_home_assistant_ip_or_url>:8123/api/mcp"
          ],
          "env": {
@@ -185,6 +195,8 @@ If your Home Assistant instance is only accessible on your local network (for ex
      }
    }
    ```
+
+   The line with `<device_id>` is optional, it is only needed if you want to send the device ID.
 5. Restart Claude for Desktop to connect.
 
 ### Example: ChatGPT
@@ -219,6 +231,9 @@ Claude Code supports remote MCP servers, making it easy to connect to your Home 
    claude mcp add-json "HA" '{
      "type": "http",
      "url": "https://<your_home_assistant_url>/api/mcp",
+     "headers": {
+       "Home-Assistant-Device-Id": "<device_id>"
+     },
      "oauth": {
        "clientId": "http://localhost:12345",
        "callbackPort": 12345
@@ -226,10 +241,11 @@ Claude Code supports remote MCP servers, making it easy to connect to your Home 
    }' --client-secret
    ```
    The name `"HA"`, the URL `"https://<your_home_assistant_url>"`, and the callback port `"12345"` are examples; adjust them to match your setup. *(Note: `clientId: "http://localhost:12345"` is correct for the Claude Code CLI's internal local callback server. Do not change this to your Home Assistant URL.)*
+   The "headers" section is optional, it is only needed if you want to send `device_id`.
 
-3. Start `claude` and type `/mcp`. Navigate to your MCP listing (for example, **HA**) and press Enter. Select **Authenticate** to open a web browser to your Home Assistant login page.
-4. After you authenticate to your Home Assistant server, Home Assistant will tell you that you can close the web browser.
-5. You can now enable tools from Home Assistant when chatting with Claude, allowing you to control Home Assistant in a similar way to how you control it through the Voice Assistant. Claude will ask you for permission before calling any tools.
+4. Start `claude` and type `/mcp`. Navigate to your MCP listing (for example, **HA**) and press Enter. Select **Authenticate** to open a web browser to your Home Assistant login page.
+5. After you authenticate to your Home Assistant server, Home Assistant will tell you that you can close the web browser.
+6. You can now enable tools from Home Assistant when chatting with Claude, allowing you to control Home Assistant in a similar way to how you control it through the Voice Assistant. Claude will ask you for permission before calling any tools.
 
 ### Example: Codex
 
@@ -250,19 +266,21 @@ Codex can connect to Home Assistant as a remote MCP server by using OAuth:
    url = "<your_home_assistant_url>/api/mcp"
    auth = "oauth"
    oauth = { client_id = "http://127.0.0.1:12345" }
+   http_headers = { "Home-Assistant-Device-Id" = "<device_id>" }
    ```
 
    Replace `<your_home_assistant_url>` with the complete URL of your Home Assistant server, including `http://` or `https://` and the port, if required. For example, use `http://homeassistant.local:8123` for a typical local connection. The callback port and the port in `client_id` must match. The `client_id` value is the base URL of the local OAuth callback used by Codex; do not replace it with your Home Assistant URL.
+   The http_headers parameter is optional, it is only needed if you want to send `device_id`.
 
-5. If you used project-local configuration, start Codex from the project and confirm the trust prompt. After the project opens, exit Codex and return to a shell in the same project. If you do not want to trust the project, use global configuration instead.
-6. Run the following command:
+6. If you used project-local configuration, start Codex from the project and confirm the trust prompt. After the project opens, exit Codex and return to a shell in the same project. If you do not want to trust the project, use global configuration instead.
+7. Run the following command:
 
    ```bash
    codex mcp login homeassistant
    ```
 
-7. Complete the authentication in your web browser and authorize Codex to access Home Assistant.
-8. Restart Codex or start a new task to load the Home Assistant MCP server.
+8. Complete the authentication in your web browser and authorize Codex to access Home Assistant.
+9. Restart Codex or start a new task to load the Home Assistant MCP server.
 
 ### Example: Cursor
 
@@ -280,6 +298,7 @@ Codex can connect to Home Assistant as a remote MCP server by using OAuth:
          "args": [
            "--transport=streamablehttp",
            "--stateless",
+           "--headers", "Home-Assistant-Device-Id", "<device_id>",
            "http://<your_local_home_assistant_ip_or_url>:8123/api/mcp"
          ],
          "env": {
@@ -289,6 +308,8 @@ Codex can connect to Home Assistant as a remote MCP server by using OAuth:
      }
    }
    ```
+
+   The line with `<device_id>` is optional, it is only needed if you want to send the device ID.
 5. Save your `mcp.json` file. You can also find this file in the `$HOME/.cursor/mcp.json` directory.
 6. Restart Cursor and return to the MCP settings. You should see the Home Assistant server in the list. The indicator should be green.
 7. In chat agent mode (Ctrl+I), ask it to control your home and the tool should be used.
@@ -307,13 +328,15 @@ Codex can connect to Home Assistant as a remote MCP server by using OAuth:
         "homeassistant": {
           "serverUrl": "https://<your_home_assistant_url>/api/mcp",
           "headers": {
+            "Home-Assistant-Device-Id": "<device_id>",
             "Authorization": "Bearer ${HOMEASSISTANT_TOKEN}"
           }
         }
       }
     }
     ```
-
+    
+    The line with `<device_id>` is optional, it is only needed if you want to send the device ID.
 4.  Replace `<your_home_assistant_url>` with the URL of your Home Assistant instance.
 5.  Set the `HOMEASSISTANT_TOKEN` environment variable to a [Long-Lived Access Token](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token) from your Home Assistant instance.
 6.  Save the file. You can now use Home Assistant tools within the Antigravity CLI.
