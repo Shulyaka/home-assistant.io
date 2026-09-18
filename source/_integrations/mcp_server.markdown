@@ -335,7 +335,7 @@ Codex can connect to Home Assistant as a remote MCP server by using OAuth:
       }
     }
     ```
-    
+
     The line with `<device_id>` is optional, it is only needed if you want to send the device ID.
 4.  Replace `<your_home_assistant_url>` with the URL of your Home Assistant instance.
 5.  Set the `HOMEASSISTANT_TOKEN` environment variable to a [Long-Lived Access Token](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token) from your Home Assistant instance.
